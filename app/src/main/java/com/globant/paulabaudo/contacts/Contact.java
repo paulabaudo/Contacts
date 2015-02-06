@@ -1,5 +1,7 @@
 package com.globant.paulabaudo.contacts;
 
+import com.j256.ormlite.field.DatabaseField;
+
 /**
  * Created by paula.baudo on 05/02/2015.
  */
@@ -9,17 +11,16 @@ public class Contact {
     public final static String LASTNAME = "lastname";
     public final static String NICKNAME = "nickname";
     public final static String URL = "url";
+    public final static String ID = "_id";
 
-    private String mFirstName;
-    private String mLastName;
-    private String mNickname;
-    private String mUrl;
+    @DatabaseField (generatedId = true, columnName = ID) private int id;
+    @DatabaseField (columnName = FIRSTNAME) private String mFirstName;
+    @DatabaseField (columnName = LASTNAME) private String mLastName;
+    @DatabaseField (columnName = NICKNAME) private String mNickname;
+    @DatabaseField (columnName = URL) private String mUrl;
 
-    public Contact(String mFirstName, String mUrl, String mNickname, String mLastName) {
-        this.mFirstName = mFirstName;
-        this.mUrl = mUrl;
-        this.mNickname = mNickname;
-        this.mLastName = mLastName;
+    public Contact() {
+
     }
 
     public Contact(String mFirstName) {

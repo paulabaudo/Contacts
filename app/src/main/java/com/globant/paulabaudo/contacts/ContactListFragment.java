@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -12,6 +13,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+import com.j256.ormlite.dao.Dao;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +25,10 @@ import java.util.List;
  */
 public class ContactListFragment extends ListFragment {
 
+    private final static String LOG_TAG = ContactListFragment.class.getSimpleName();
     final static Integer REQUEST_CODE = 0;
     ContactAdapter mAdapter;
+    DatabaseHelper mDBHelper = null;
 
     public ContactListFragment() {
     }
@@ -33,19 +40,50 @@ public class ContactListFragment extends ListFragment {
         return rootView;
     }
 
+    public DatabaseHelper getDBHelper() {
+        if (mDBHelper == null){
+            mDBHelper = OpenHelperManager.getHelper(getActivity(), DatabaseHelper.class);
+        }
+        return mDBHelper;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE){
             if (resultCode == Activity.RESULT_OK){
-                addContact(data.getStringExtra(Contact.FIRSTNAME), data.getStringExtra(Contact.LASTNAME),
-                        data.getStringExtra(Contact.NICKNAME), data.getStringExtra(Contact.URL));
+                String firstname = data.getStringExtra(Contact.FIRSTNAME);
+                String lastname = data.getStringExtra(Contact.LASTNAME);
+                String nickname = data.getStringExtra(Contact.NICKNAME);
+                String url = data.getStringExtra(Contact.URL);
+                addContact(firstname, lastname, nickname, url);
+                Contact contact = getContact(firstname, lastname, nickname, url);
+                saveContact(contact);
             }
         }
     }
 
+    private Contact getContact(String firstname, String lastname, String nickname, String url) {
+        Contact contact = new Contact();
+        contact.setFirstName(firstname);
+        contact.setLastName(lastname);
+        contact.setNickname(nickname);
+        contact.setUrl(url);
+        return contact;
+    }
+
+    private void saveContact(Contact contact) {
+        try {
+            Dao<Contact,Integer> dao = getDBHelper().getContactDao();
+            dao.create(contact);
+        } catch (SQLException e) {
+            Log.e(LOG_TAG, "Failed to create DAO.", e);
+        }
+
+    }
+
     private void addContact(String firstname, String lastname, String nickname, String url) {
-        Contact contact = new Contact(firstname, url, nickname, lastname);
+        Contact contact = getContact(firstname, lastname, nickname, url);
         mAdapter.add(contact);
     }
 
@@ -53,6 +91,15 @@ public class ContactListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onDestroy() {
+        if (mDBHelper!=null){
+            OpenHelperManager.releaseHelper();
+            mDBHelper = null;
+        }
+        super.onDestroy();
     }
 
     @Override

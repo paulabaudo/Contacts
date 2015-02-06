@@ -32,7 +32,12 @@ public class AddContactFragment extends Fragment {
         mButtonDone = (Button) rootView.findViewById(R.id.button_done);
         wireUpEditTexts(rootView);
         prepareEditTexts();
+        prepareButton(rootView);
 
+        return rootView;
+    }
+
+    private void prepareButton(final View rootView) {
         mButtonDone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -58,8 +63,6 @@ public class AddContactFragment extends Fragment {
                 return intentResult;
             }
         });
-
-        return rootView;
     }
 
     private void prepareEditTexts() {
