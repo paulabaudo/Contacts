@@ -1,6 +1,8 @@
 package com.globant.paulabaudo.contacts;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 /**
@@ -53,7 +56,19 @@ public class ContactAdapter extends ArrayAdapter<Contact> {
             TextView textViewNickname = (TextView) rowView.findViewById(R.id.text_view_nickname);
             textViewNickname.setText(mContacts.get(position).getNickname());
             ImageView imageViewPhoto = (ImageView) rowView.findViewById(R.id.image_view_photo);
-            imageViewPhoto.setImageResource(R.drawable.placeholder_contact);
+
+            Bitmap bmp = getBitmap(position);
+            imageViewPhoto.setImageBitmap(bmp);
         }
+    }
+
+    private Bitmap getBitmap(int position) {
+        Bitmap bmp;
+        byte[] image;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inMutable = true;
+        image = mContacts.get(position).getImage();
+        bmp = BitmapFactory.decodeByteArray(image, 0, image.length, options);
+        return bmp;
     }
 }

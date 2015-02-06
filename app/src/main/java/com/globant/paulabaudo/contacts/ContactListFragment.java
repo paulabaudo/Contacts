@@ -55,20 +55,20 @@ public class ContactListFragment extends ListFragment {
                 String firstname = data.getStringExtra(Contact.FIRSTNAME);
                 String lastname = data.getStringExtra(Contact.LASTNAME);
                 String nickname = data.getStringExtra(Contact.NICKNAME);
-                String url = data.getStringExtra(Contact.URL);
-                addContact(firstname, lastname, nickname, url);
-                Contact contact = getContact(firstname, lastname, nickname, url);
+                byte[] image = data.getByteArrayExtra(Contact.IMAGE);
+                addContact(firstname, lastname, nickname, image);
+                Contact contact = getContact(firstname, lastname, nickname, image);
                 saveContact(contact);
             }
         }
     }
 
-    private Contact getContact(String firstname, String lastname, String nickname, String url) {
+    private Contact getContact(String firstname, String lastname, String nickname, byte[] image) {
         Contact contact = new Contact();
         contact.setFirstName(firstname);
         contact.setLastName(lastname);
         contact.setNickname(nickname);
-        contact.setUrl(url);
+        contact.setImage(image);
         return contact;
     }
 
@@ -82,8 +82,8 @@ public class ContactListFragment extends ListFragment {
 
     }
 
-    private void addContact(String firstname, String lastname, String nickname, String url) {
-        Contact contact = getContact(firstname, lastname, nickname, url);
+    private void addContact(String firstname, String lastname, String nickname, byte[] image) {
+        Contact contact = getContact(firstname, lastname, nickname, image);
         mAdapter.add(contact);
     }
 

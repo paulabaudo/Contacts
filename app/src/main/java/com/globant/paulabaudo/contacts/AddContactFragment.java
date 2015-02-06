@@ -3,6 +3,7 @@ package com.globant.paulabaudo.contacts;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -15,6 +16,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -25,6 +28,7 @@ public class AddContactFragment extends Fragment {
     EditText mEditTextLastName;
     ImageButton mImageButtonContactPhoto;
     Bitmap mPhoto;
+    byte[] mImage;
 
     public AddContactFragment() {
     }
@@ -33,8 +37,18 @@ public class AddContactFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_add_contact, container, false);
-        mButtonDone = (Button) rootView.findViewById(R.id.button_done);
+        wireUpButtons(rootView);
+        prepareImageButton(rootView);
+        wireUpEditTexts(rootView);
+        prepareEditTexts();
+        prepareButton(rootView);
+
+        return rootView;
+    }
+
+    private void prepareImageButton(View rootView) {
         mImageButtonContactPhoto = (ImageButton) rootView.findViewById(R.id.image_button_contact_photo);
+        mPhoto = BitmapFactory.decodeResource(getActivity().getResources(),R.drawable.placeholder_contact);
 
         mImageButtonContactPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,12 +57,10 @@ public class AddContactFragment extends Fragment {
                 startActivityForResult(cameraIntent, ContactListFragment.REQUEST_CODE);
             }
         });
+    }
 
-        wireUpEditTexts(rootView);
-        prepareEditTexts();
-        prepareButton(rootView);
-
-        return rootView;
+    private void wireUpButtons(View rootView) {
+        mButtonDone = (Button) rootView.findViewById(R.id.button_done);
     }
 
     @Override
@@ -58,6 +70,12 @@ public class AddContactFragment extends Fragment {
             mPhoto = (Bitmap) data.getExtras().get("data");
             mImageButtonContactPhoto.setImageBitmap(mPhoto);
         }
+    }
+
+    private void convertBitmapImageToByteArray() {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        mPhoto.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        mImage = stream.toByteArray();
     }
 
     private void prepareButton(final View rootView) {
@@ -76,7 +94,9 @@ public class AddContactFragment extends Fragment {
                 Intent intentResult = new Intent();
                 intentResult.putExtra(Contact.FIRSTNAME,mEditTextFirstName.getText().toString());
                 intentResult.putExtra(Contact.LASTNAME,mEditTextLastName.getText().toString());
-                intentResult.putExtra(Contact.URL,"");
+
+                convertBitmapImageToByteArray();
+                intentResult.putExtra(Contact.IMAGE,mImage);
 
                 if (!TextUtils.isEmpty(editTextNickname.getText().toString())){
                     intentResult.putExtra(Contact.NICKNAME, editTextNickname.getText().toString());

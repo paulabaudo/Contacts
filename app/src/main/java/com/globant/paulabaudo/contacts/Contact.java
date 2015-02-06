@@ -1,5 +1,6 @@
 package com.globant.paulabaudo.contacts;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 
 /**
@@ -10,14 +11,14 @@ public class Contact {
     public final static String FIRSTNAME = "firstname";
     public final static String LASTNAME = "lastname";
     public final static String NICKNAME = "nickname";
-    public final static String URL = "url";
+    public final static String IMAGE = "image";
     public final static String ID = "_id";
 
     @DatabaseField (generatedId = true, columnName = ID) private int id;
     @DatabaseField (columnName = FIRSTNAME) private String mFirstName;
     @DatabaseField (columnName = LASTNAME) private String mLastName;
     @DatabaseField (columnName = NICKNAME) private String mNickname;
-    @DatabaseField (columnName = URL) private String mUrl;
+    @DatabaseField (columnName = IMAGE, dataType = DataType.BYTE_ARRAY) private byte[] image;
 
     public Contact() {
 
@@ -51,11 +52,11 @@ public class Contact {
         this.mNickname = mNickname;
     }
 
-    public String getUrl() {
-        return mUrl;
+    public byte[] getImage() {
+        return image;
     }
 
-    public void setUrl(String mUrl) {
-        this.mUrl = mUrl;
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 }
