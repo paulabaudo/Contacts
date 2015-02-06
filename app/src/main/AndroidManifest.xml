@@ -20,6 +20,7 @@
             android:name=".AddContactActivity"
             android:label="@string/title_activity_add_contact" >
         </activity>
+        <uses-feature android:name="android.hardware.camera" android:required="false"></uses-feature>
     </application>
 
 </manifest>

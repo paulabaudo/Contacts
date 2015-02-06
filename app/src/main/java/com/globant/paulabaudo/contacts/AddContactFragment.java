@@ -2,6 +2,7 @@ package com.globant.paulabaudo.contacts;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -21,6 +23,8 @@ public class AddContactFragment extends Fragment {
     Button mButtonDone;
     EditText mEditTextFirstName;
     EditText mEditTextLastName;
+    ImageButton mImageButtonContactPhoto;
+    Bitmap mPhoto;
 
     public AddContactFragment() {
     }
@@ -30,11 +34,30 @@ public class AddContactFragment extends Fragment {
                              Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_add_contact, container, false);
         mButtonDone = (Button) rootView.findViewById(R.id.button_done);
+        mImageButtonContactPhoto = (ImageButton) rootView.findViewById(R.id.image_button_contact_photo);
+
+        mImageButtonContactPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(cameraIntent, ContactListFragment.REQUEST_CODE);
+            }
+        });
+
         wireUpEditTexts(rootView);
         prepareEditTexts();
         prepareButton(rootView);
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ContactListFragment.REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            mPhoto = (Bitmap) data.getExtras().get("data");
+            mImageButtonContactPhoto.setImageBitmap(mPhoto);
+        }
     }
 
     private void prepareButton(final View rootView) {
