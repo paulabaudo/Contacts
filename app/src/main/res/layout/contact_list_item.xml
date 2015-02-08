@@ -39,5 +39,14 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:text="Medium Text"
             android:id="@+id/text_view_nickname" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:id="@+id/text_view_id"
+            android:layout_weight="1"
+            android:visibility="gone"/>
     </LinearLayout>
+
 </LinearLayout>

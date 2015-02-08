@@ -71,4 +71,8 @@ public class ContactAdapter extends ArrayAdapter<Contact> {
         bmp = BitmapFactory.decodeByteArray(image, 0, image.length, options);
         return bmp;
     }
+
+    public Contact getContactItem(int position){
+        return mContacts.get(position);
+    }
 }

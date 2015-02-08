@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
@@ -25,6 +26,9 @@ import java.util.List;
  */
 public class ContactListFragment extends ListFragment {
 
+    public final static String ACTION = "action";
+    public final static String ACTION_EDIT_DELETE = "edit";
+    public final static String ACTION_ADD = "action";
     private final static String LOG_TAG = ContactListFragment.class.getSimpleName();
     final static Integer REQUEST_CODE = 0;
     ContactAdapter mAdapter;
@@ -50,17 +54,29 @@ public class ContactListFragment extends ListFragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE){
-            if (resultCode == Activity.RESULT_OK){
-                String firstname = data.getStringExtra(Contact.FIRSTNAME);
-                String lastname = data.getStringExtra(Contact.LASTNAME);
-                String nickname = data.getStringExtra(Contact.NICKNAME);
-                byte[] image = data.getByteArrayExtra(Contact.IMAGE);
-                addContact(firstname, lastname, nickname, image);
-                Contact contact = getContact(firstname, lastname, nickname, image);
-                saveContact(contact);
+        if (requestCode == REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                activityResultFromAdd(data);
+//                if (data.getStringExtra(ACTION).equals(ACTION_ADD)) {
+//                    activityResultFromAdd(data);
+//                } else {
+//                    String firstname = data.getStringExtra(Contact.FIRSTNAME);
+//                    String lastname = data.getStringExtra(Contact.LASTNAME);
+//                    String nickname = data.getStringExtra(Contact.NICKNAME);
+//                    byte[] image = data.getByteArrayExtra(Contact.IMAGE);
+//                }
             }
         }
+    }
+
+    private void activityResultFromAdd(Intent data) {
+        String firstname = data.getStringExtra(Contact.FIRSTNAME);
+        String lastname = data.getStringExtra(Contact.LASTNAME);
+        String nickname = data.getStringExtra(Contact.NICKNAME);
+        byte[] image = data.getByteArrayExtra(Contact.IMAGE);
+        addContact(firstname, lastname, nickname, image);
+        Contact contact = getContact(firstname, lastname, nickname, image);
+        saveContact(contact);
     }
 
     private Contact getContact(String firstname, String lastname, String nickname, byte[] image) {
@@ -72,6 +88,15 @@ public class ContactListFragment extends ListFragment {
         return contact;
     }
 
+    private void updateContact(Contact contact) {
+        try {
+            Dao<Contact,Integer> dao = getDBHelper().getContactDao();
+            dao.update(contact);
+        } catch (SQLException e) {
+            Log.e(LOG_TAG, "Failed to create DAO.", e);
+        }
+    }
+
     private void saveContact(Contact contact) {
         try {
             Dao<Contact,Integer> dao = getDBHelper().getContactDao();
@@ -79,7 +104,6 @@ public class ContactListFragment extends ListFragment {
         } catch (SQLException e) {
             Log.e(LOG_TAG, "Failed to create DAO.", e);
         }
-
     }
 
     private void addContact(String firstname, String lastname, String nickname, byte[] image) {
@@ -127,6 +151,7 @@ public class ContactListFragment extends ListFragment {
         switch (id) {
             case R.id.action_add:
                 Intent intent = new Intent(getActivity(), AddContactActivity.class);
+                intent.putExtra(ACTION,ACTION_ADD);
                 startActivityForResult(intent, REQUEST_CODE);
                 handled = true;
                 break;
@@ -135,5 +160,24 @@ public class ContactListFragment extends ListFragment {
             handled = super.onOptionsItemSelected(item);
         }
         return handled;
+    }
+
+    @Override
+    public void onListItemClick(ListView l, View v, int position, long id) {
+        super.onListItemClick(l, v, position, id);
+        Contact contact = mAdapter.getContactItem(position);
+        Intent intent = createEditDeleteIntent(contact);
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    private Intent createEditDeleteIntent(Contact contact) {
+        Intent intent = new Intent(getActivity(), AddContactActivity.class);
+        intent.putExtra(Contact.FIRSTNAME, contact.getFirstName());
+        intent.putExtra(Contact.LASTNAME, contact.getLastName());
+        intent.putExtra(Contact.NICKNAME, contact.getNickname());
+        intent.putExtra(Contact.IMAGE, contact.getImage());
+        intent.putExtra(Contact.ID, contact.getId());
+        intent.putExtra(ACTION,ACTION_EDIT_DELETE);
+        return intent;
     }
 }

@@ -59,4 +59,9 @@ public class Contact {
     public void setImage(byte[] image) {
         this.image = image;
     }
+
+    public int getId() {
+        return id;
+    }
+
 }
