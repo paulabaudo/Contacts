@@ -56,15 +56,18 @@ public class ContactListFragment extends ListFragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                activityResultFromAdd(data);
-//                if (data.getStringExtra(ACTION).equals(ACTION_ADD)) {
-//                    activityResultFromAdd(data);
-//                } else {
-//                    String firstname = data.getStringExtra(Contact.FIRSTNAME);
-//                    String lastname = data.getStringExtra(Contact.LASTNAME);
-//                    String nickname = data.getStringExtra(Contact.NICKNAME);
-//                    byte[] image = data.getByteArrayExtra(Contact.IMAGE);
-//                }
+                if (data.getStringExtra(ACTION).equals(ACTION_ADD)) {
+                    activityResultFromAdd(data);
+                } else {
+                    String firstname = data.getStringExtra(Contact.FIRSTNAME);
+                    String lastname = data.getStringExtra(Contact.LASTNAME);
+                    String nickname = data.getStringExtra(Contact.NICKNAME);
+                    byte[] image = data.getByteArrayExtra(Contact.IMAGE);
+                    Contact contact = getContact(firstname, lastname, nickname, image);
+                    contact.setId(data.getIntExtra(Contact.ID,0));
+                    updateContact(contact);
+                    addContact(contact);
+                }
             }
         }
     }
@@ -74,9 +77,9 @@ public class ContactListFragment extends ListFragment {
         String lastname = data.getStringExtra(Contact.LASTNAME);
         String nickname = data.getStringExtra(Contact.NICKNAME);
         byte[] image = data.getByteArrayExtra(Contact.IMAGE);
-        addContact(firstname, lastname, nickname, image);
         Contact contact = getContact(firstname, lastname, nickname, image);
-        saveContact(contact);
+        contact = saveContact(contact); //This way I can get the generated id for the object
+        addContact(contact);
     }
 
     private Contact getContact(String firstname, String lastname, String nickname, byte[] image) {
@@ -97,17 +100,18 @@ public class ContactListFragment extends ListFragment {
         }
     }
 
-    private void saveContact(Contact contact) {
+    private Contact saveContact(Contact contact) {
         try {
             Dao<Contact,Integer> dao = getDBHelper().getContactDao();
             dao.create(contact);
         } catch (SQLException e) {
             Log.e(LOG_TAG, "Failed to create DAO.", e);
         }
+
+        return contact;
     }
 
-    private void addContact(String firstname, String lastname, String nickname, byte[] image) {
-        Contact contact = getContact(firstname, lastname, nickname, image);
+    private void addContact(Contact contact) {
         mAdapter.add(contact);
     }
 
@@ -168,6 +172,7 @@ public class ContactListFragment extends ListFragment {
         Contact contact = mAdapter.getContactItem(position);
         Intent intent = createEditDeleteIntent(contact);
         startActivityForResult(intent, REQUEST_CODE);
+        mAdapter.remove(contact);
     }
 
     private Intent createEditDeleteIntent(Contact contact) {
