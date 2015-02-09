@@ -16,7 +16,6 @@ import android.widget.ListView;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.List;
 public class ContactListFragment extends ListFragment {
 
     public final static String ACTION = "action";
-    public final static String ACTION_EDIT_DELETE = "edit";
+    public final static String ACTION_EDIT = "edit";
     public final static String ACTION_ADD = "action";
     private final static String LOG_TAG = ContactListFragment.class.getSimpleName();
     final static Integer REQUEST_CODE = 0;
@@ -68,28 +67,45 @@ public class ContactListFragment extends ListFragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
+                String firstname = data.getStringExtra(Contact.FIRSTNAME);
+                String lastname = data.getStringExtra(Contact.LASTNAME);
+                String nickname = data.getStringExtra(Contact.NICKNAME);
+                byte[] image = data.getByteArrayExtra(Contact.IMAGE);
+                Contact contact = getContact(firstname, lastname, nickname, image);
                 if (data.getStringExtra(ACTION).equals(ACTION_ADD)) {
-                    activityResultFromAdd(data);
+                    activityResultFromAdd(contact);
                 } else {
-                    String firstname = data.getStringExtra(Contact.FIRSTNAME);
-                    String lastname = data.getStringExtra(Contact.LASTNAME);
-                    String nickname = data.getStringExtra(Contact.NICKNAME);
-                    byte[] image = data.getByteArrayExtra(Contact.IMAGE);
-                    Contact contact = getContact(firstname, lastname, nickname, image);
-                    contact.setId(data.getIntExtra(Contact.ID,0));
-                    updateContact(contact);
-                    addContact(contact);
+                    contact.setId(data.getIntExtra(Contact.ID, 0));
+                    if (data.getStringExtra(ACTION).equals(ACTION_EDIT)) {
+                        activityResultFromUpdate(contact);
+                    } else {
+                        deleteContact(contact); //From Database
+                        removeContact(contact); //From Adapter
+                    }
                 }
             }
         }
     }
 
-    private void activityResultFromAdd(Intent data) {
-        String firstname = data.getStringExtra(Contact.FIRSTNAME);
-        String lastname = data.getStringExtra(Contact.LASTNAME);
-        String nickname = data.getStringExtra(Contact.NICKNAME);
-        byte[] image = data.getByteArrayExtra(Contact.IMAGE);
-        Contact contact = getContact(firstname, lastname, nickname, image);
+    private void deleteContact(Contact contact) {
+        try {
+            Dao<Contact,Integer> dao = getDBHelper().getContactDao();
+            dao.delete(contact);
+        } catch (SQLException e) {
+            Log.e(LOG_TAG, "Failed to create DAO.", e);
+        }
+    }
+
+    private void removeContact(Contact contact) {
+        mAdapter.remove(contact);
+    }
+
+    private void activityResultFromUpdate(Contact contact) {
+        updateContact(contact);
+        addContact(contact);
+    }
+
+    private void activityResultFromAdd(Contact contact) {
         contact = saveContact(contact); //This way I can get the generated id for the object
         addContact(contact);
     }
@@ -185,7 +201,7 @@ public class ContactListFragment extends ListFragment {
         Contact contact = mAdapter.getContactItem(position);
         Intent intent = createEditDeleteIntent(contact);
         startActivityForResult(intent, REQUEST_CODE);
-        mAdapter.remove(contact);
+        removeContact(contact);
     }
 
     private Intent createEditDeleteIntent(Contact contact) {
@@ -195,7 +211,7 @@ public class ContactListFragment extends ListFragment {
         intent.putExtra(Contact.NICKNAME, contact.getNickname());
         intent.putExtra(Contact.IMAGE, contact.getImage());
         intent.putExtra(Contact.ID, contact.getId());
-        intent.putExtra(ACTION,ACTION_EDIT_DELETE);
+        intent.putExtra(ACTION, ACTION_EDIT);
         return intent;
     }
 }

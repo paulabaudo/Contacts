@@ -21,8 +21,9 @@ import java.io.ByteArrayOutputStream;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class AddContactFragment extends Fragment {
+public class ABMContactFragment extends Fragment {
 
+    public final static String ACTION_DELETE_CONTACT = "delete";
     Button mButtonDone;
     EditText mEditTextFirstName;
     EditText mEditTextLastName;
@@ -34,24 +35,38 @@ public class AddContactFragment extends Fragment {
     Button mButtonDelete;
     int mContactId;
 
-    public AddContactFragment() {
+    public ABMContactFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View rootView = inflater.inflate(R.layout.fragment_add_contact, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_abm_contact, container, false);
         getAction();
         wireUpButtons(rootView);
         prepareImageButton(rootView);
         wireUpEditTexts(rootView);
         prepareEditTexts();
         prepareButton(rootView);
-        if (mAction.equals(ContactListFragment.ACTION_EDIT_DELETE)){
+        prepareButtonDelete(rootView);
+        if (mAction.equals(ContactListFragment.ACTION_EDIT)){
             prepareEditDeleteScreen(rootView);
         }
 
         return rootView;
+    }
+
+    private void prepareButtonDelete(View rootView) {
+        mButtonDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAction = ACTION_DELETE_CONTACT;
+                Activity activity = getActivity();
+                Intent intentResult = getIntent();
+                activity.setResult(Activity.RESULT_OK, intentResult);
+                activity.finish();
+            }
+        });
     }
 
     private void prepareEditDeleteScreen(View rootView) {
@@ -79,7 +94,7 @@ public class AddContactFragment extends Fragment {
         if (action.equals(ContactListFragment.ACTION_ADD)){
             mAction = ContactListFragment.ACTION_ADD;
         } else {
-            mAction = ContactListFragment.ACTION_EDIT_DELETE;
+            mAction = ContactListFragment.ACTION_EDIT;
         }
     }
 
@@ -126,28 +141,29 @@ public class AddContactFragment extends Fragment {
                 activity.finish();
             }
 
-            private Intent getIntent() {
-                Intent intentResult = new Intent();
-                intentResult.putExtra(ContactListFragment.ACTION, mAction);
-                intentResult.putExtra(Contact.FIRSTNAME,mEditTextFirstName.getText().toString());
-                intentResult.putExtra(Contact.LASTNAME,mEditTextLastName.getText().toString());
-
-                convertBitmapImageToByteArray();
-                intentResult.putExtra(Contact.IMAGE,mImage);
-
-                if (!TextUtils.isEmpty(mEditTextNickname.getText().toString())){
-                    intentResult.putExtra(Contact.NICKNAME, mEditTextNickname.getText().toString());
-                } else {
-                    intentResult.putExtra(Contact.NICKNAME, "");
-                }
-
-                if (mAction.equals(ContactListFragment.ACTION_EDIT_DELETE)){
-                    intentResult.putExtra(Contact.ID, mContactId);
-                }
-
-                return intentResult;
-            }
         });
+    }
+
+    private Intent getIntent() {
+        Intent intentResult = new Intent();
+        intentResult.putExtra(ContactListFragment.ACTION, mAction);
+        intentResult.putExtra(Contact.FIRSTNAME,mEditTextFirstName.getText().toString());
+        intentResult.putExtra(Contact.LASTNAME,mEditTextLastName.getText().toString());
+
+        convertBitmapImageToByteArray();
+        intentResult.putExtra(Contact.IMAGE,mImage);
+
+        if (!TextUtils.isEmpty(mEditTextNickname.getText().toString())){
+            intentResult.putExtra(Contact.NICKNAME, mEditTextNickname.getText().toString());
+        } else {
+            intentResult.putExtra(Contact.NICKNAME, "");
+        }
+
+        if (mAction.equals(ContactListFragment.ACTION_EDIT) || mAction.equals(ACTION_DELETE_CONTACT)){
+            intentResult.putExtra(Contact.ID, mContactId);
+        }
+
+        return intentResult;
     }
 
     private void prepareEditTexts() {

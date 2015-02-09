@@ -14,7 +14,7 @@ public class AddContactActivity extends ActionBarActivity {
         setContentView(R.layout.activity_add_contact);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new AddContactFragment())
+                    .add(R.id.container, new ABMContactFragment())
                     .commit();
         }
     }
