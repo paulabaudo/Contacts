@@ -16,6 +16,7 @@ import android.widget.ListView;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -49,6 +50,17 @@ public class ContactListFragment extends ListFragment {
             mDBHelper = OpenHelperManager.getHelper(getActivity(), DatabaseHelper.class);
         }
         return mDBHelper;
+    }
+
+    private List<Contact> retrieveSavedContacts() {
+        List<Contact> contacts = new ArrayList<>();
+        try {
+            Dao<Contact,Integer> contactDao = getDBHelper().getContactDao();
+            contacts = contactDao.queryForAll();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return contacts;
     }
 
     @Override
@@ -137,7 +149,8 @@ public class ContactListFragment extends ListFragment {
     }
 
     private void prepareListView() {
-        List<Contact> entries = new ArrayList<>();
+        List<Contact> entries;
+        entries = retrieveSavedContacts();
         mAdapter = new ContactAdapter(getActivity(), entries);
         setListAdapter(mAdapter);
     }
